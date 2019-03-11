@@ -180,6 +180,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+
+
     }
     public void onAccuracyChanged(Sensor sensor,int accuracy){
 
@@ -193,10 +195,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float y=event.values[1];
             float z=event.values[2];
 
+            //x,y and z are vectors with the unit m/s^2
+
             //displaying for testing purposes
             xCoor.setText("X: "+x);
             yCoor.setText("Y: "+y);
             zCoor.setText("Z: "+z);
+
+            //idea: write only if a certain extent of acceleration is present
 
             if (connThread != null){ //if Bluetooth connection is alive, we write to the remote party
                 connThread.write(x + "," + y + "," + z);
