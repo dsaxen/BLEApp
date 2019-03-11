@@ -21,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private ConnectedThread connThread;
     private Handler mHandler; // Our main handler that will receive callback notifications
+    private Handler nHandler; //Toast text handler
     private ArrayAdapter<String> mBTArrayAdapter;
 
     private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -82,8 +84,8 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("No support for Bluetooth");
             return;
         }
-        mHandler = new Handler(){
-            public void handleMessage(android.os.Message msg){
+        mHandler = new Handler(new Handler.Callback(){
+            public boolean handleMessage(android.os.Message msg){
                 if(msg.what == MESSAGE_READ){
                     String readMessage = null;
                     try {
@@ -93,9 +95,21 @@ public class MainActivity extends AppCompatActivity {
                     }
                     readStatus.setText(readMessage);
                 }
-
+                return true;
             }
-        };
+        });
+        nHandler = new Handler(new Handler.Callback(){
+            public boolean handleMessage(android.os.Message msg){
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast toast = Toast.makeText(MainActivity.this,"Invalid MAC Address",Toast.LENGTH_LONG);
+                        toast.setGravity(Gravity.CENTER|Gravity.CENTER_HORIZONTAL,0,0);
+                        toast.show();
+                    }
+                });
+                return true;
+            }
+        });
 
         // Get the device MAC address, which is the last 17 chars in the View
         final String address = macAddress.getText().toString();
@@ -106,16 +120,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v){
                 final String address = macAddress.getText().toString();
-                if(address == null){
-                    return;
-                }
 
                 new Thread()
                 {
                     public void run() {
                         boolean fail = false;
-
-                        BluetoothDevice device = bAdapter.getRemoteDevice(address);
+                        try{
+                            device = bAdapter.getRemoteDevice(address);
+                        }
+                        catch(IllegalArgumentException | IllegalStateException e){
+                            Message msg = nHandler.obtainMessage(CONNECTING_STATUS, "Invalid MAC Address");
+                            msg.sendToTarget();
+                            return;
+                        }
 
                         try {
                             mBTSocket = createBluetoothSocket(device);
