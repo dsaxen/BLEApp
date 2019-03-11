@@ -198,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             yCoor.setText("Y: "+y);
             zCoor.setText("Z: "+z);
 
-            if (connThread != null){ //if Bluetooth connection is alive
+            if (connThread != null){ //if Bluetooth connection is alive, we write to the remote party
                 connThread.write(x + "," + y + "," + z);
             }
         }
