@@ -1,19 +1,18 @@
 package com.example.ds.internetprotocols_bleapp;
 
 import android.Manifest;
-import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothSocket;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.HandlerThread;
 import android.os.Message;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
@@ -23,7 +22,6 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,12 +35,13 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity implements SensorEventListener{
     private final static int REQUEST_ENABLE_BT = 1;
     private static final String TAG = "MainActivity";
     private ConnectedThread connThread;
-    private Handler mHandler; // Our main handler that will receive callback notifications
-    private Handler nHandler; //Toast text handler
+    private Handler callbackHandler; // Our main handler that will receive callback notifications
+    private Handler toastHandler; //Toast text handler
     private ArrayAdapter<String> mBTArrayAdapter;
 
     private static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -52,10 +51,17 @@ public class MainActivity extends AppCompatActivity {
 
     BluetoothDevice device;
     BluetoothAdapter bAdapter;
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
 
     private Button button;
     private TextView readStatus;
     private EditText macAddress;
+
+    TextView xCoor; //X axis object
+    TextView yCoor; //Y axis object
+    TextView zCoor; //Z axis object
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +70,15 @@ public class MainActivity extends AppCompatActivity {
         button = (Button) findViewById(R.id.button);
         readStatus = (TextView) findViewById(R.id.readStatus);
         macAddress = (EditText) findViewById(R.id.editText);
+        xCoor=(TextView)findViewById(R.id.xCoor);
+        yCoor=(TextView)findViewById(R.id.yCoor);
+        zCoor=(TextView)findViewById(R.id.zCoor);
+
+        //initialize Accelerometer sensor
+        sensorManager=(SensorManager)getSystemService(SENSOR_SERVICE);
+        // add listener. The listener will be  (this) class
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
 
         //initialize Location
@@ -79,12 +94,7 @@ public class MainActivity extends AppCompatActivity {
             Intent enableBIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBIntent, REQUEST_ENABLE_BT);
         }
-
-        if (bAdapter == null){
-            System.out.println("No support for Bluetooth");
-            return;
-        }
-        mHandler = new Handler(new Handler.Callback(){
+        callbackHandler = new Handler(new Handler.Callback(){
             public boolean handleMessage(android.os.Message msg){
                 if(msg.what == MESSAGE_READ){
                     String readMessage = null;
@@ -98,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        nHandler = new Handler(new Handler.Callback(){
+        toastHandler = new Handler(new Handler.Callback(){
             public boolean handleMessage(android.os.Message msg){
                 runOnUiThread(new Runnable() {
                     public void run() {
@@ -129,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
                             device = bAdapter.getRemoteDevice(address);
                         }
                         catch(IllegalArgumentException | IllegalStateException e){
-                            Message msg = nHandler.obtainMessage(CONNECTING_STATUS, "Invalid MAC Address");
+                            Message msg = toastHandler.obtainMessage(CONNECTING_STATUS, "Invalid MAC Address");
                             msg.sendToTarget();
                             return;
                         }
@@ -147,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                             try {
                                 fail = true;
                                 mBTSocket.close();
-                                mHandler.obtainMessage(CONNECTING_STATUS, -1, -1)
+                                callbackHandler.obtainMessage(CONNECTING_STATUS, -1, -1)
                                         .sendToTarget();
                             } catch (IOException e2) {
                                 //insert code to deal with this
@@ -158,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
                             connThread = new ConnectedThread(mBTSocket);
                             connThread.start();
 
-                            mHandler.obtainMessage(CONNECTING_STATUS, 1, -1, "ewe")
+                            callbackHandler.obtainMessage(CONNECTING_STATUS, 1, -1, "ewe")
                                     .sendToTarget();
                         }
                     }
@@ -170,6 +180,28 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+    public void onAccuracyChanged(Sensor sensor,int accuracy){
+
+    }
+    public void onSensorChanged(SensorEvent event){
+
+        // check sensor type
+        if(event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
+            // assign directions
+            float x=event.values[0];
+            float y=event.values[1];
+            float z=event.values[2];
+
+            //displaying for testing purposes
+            xCoor.setText("X: "+x);
+            yCoor.setText("Y: "+y);
+            zCoor.setText("Z: "+z);
+
+            if (connThread != null){ //if Bluetooth connection is alive
+                connThread.write(x + "," + y + "," + z);
+            }
+        }
     }
     final BroadcastReceiver blReceiver = new BroadcastReceiver() {
         @Override
@@ -228,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
                         SystemClock.sleep(100); //pause and wait for rest of data. Adjust this depending on your sending speed.
                         bytes = mmInStream.available(); // how many bytes are ready to be read?
                         bytes = mmInStream.read(buffer, 0, bytes); // record how many bytes we actually read
-                        mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
+                        callbackHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
                                 .sendToTarget(); // Send the obtained bytes to the UI activity
                     }
                 } catch (IOException e) {
@@ -253,6 +285,9 @@ public class MainActivity extends AppCompatActivity {
                 mmSocket.close();
             } catch (IOException e) { }
         }
+
     }
+
+
 }
 
