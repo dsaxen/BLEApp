@@ -25,10 +25,24 @@
         android:layout_marginStart="68dp"
         android:layout_marginEnd="68dp"
         android:layout_marginBottom="86dp"
-        android:text="TextView"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
+        app:layout_constraintTop_toBottomOf="@+id/editText" />
+
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="139dp"
+        android:layout_marginBottom="169dp"
+        android:ems="10"
+        android:hint="MAC Address"
+        android:digits="0123456789ABCDEF-"
+        android:inputType="textCapCharacters"
+        app:layout_constraintBottom_toTopOf="@+id/readStatus"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
