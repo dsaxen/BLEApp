@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.util.Locale;
 import java.util.UUID;
 
 
@@ -58,6 +60,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView readStatus;
     private EditText macAddress;
 
+    private RadioButton noDelay;
+    private RadioButton normalDelay;
+
     TextView xCoor; //X axis object
     TextView yCoor; //Y axis object
     TextView zCoor; //Z axis object
@@ -74,11 +79,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         yCoor=(TextView)findViewById(R.id.yCoor);
         zCoor=(TextView)findViewById(R.id.zCoor);
 
-        //initialize Accelerometer sensor
-        sensorManager=(SensorManager)getSystemService(SENSOR_SERVICE);
-        // add listener. The listener will be  (this) class
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        noDelay = (RadioButton) findViewById(R.id.noDelay);
+        normalDelay = (RadioButton) findViewById(R.id.normalDelay);
+
 
 
         //initialize Location
@@ -126,8 +129,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             @Override
             public void onClick(View v){
+                //initialize Accelerometer sensor
+                sensorManager=(SensorManager)getSystemService(SENSOR_SERVICE);
+                // add listener. The listener will be  (this) class
+                accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+                if(sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).size()>0){
+                    sensorManager.unregisterListener(MainActivity.this);
+                }
+
+                if(noDelay.isChecked()){
+                    sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+                }
+                else{
+                    sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+                }
+
                 final String address = macAddress.getText().toString();
-                System.out.println(address);
+
 
                 new Thread()
                 {
@@ -186,19 +205,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
     public void onSensorChanged(SensorEvent event){
 
+
+
         // check sensor type
         if(event.sensor.getType()==Sensor.TYPE_ACCELEROMETER){
             // assign directions
             float x=event.values[0];
             float y=event.values[1];
             float z=event.values[2];
+            System.out.println(x);
 
             //x,y and z are vectors with the unit m/s^2
 
             //displaying for testing purposes
-            xCoor.setText("X: "+x);
-            yCoor.setText("Y: "+y);
-            zCoor.setText("Z: "+z);
+            xCoor.setText("X: "+ String.format(Locale.US, "%.2f", x));
+            yCoor.setText("Y: "+ String.format(Locale.US, "%.2f", y));
+            zCoor.setText("Z: "+ String.format(Locale.US, "%.2f", z));
 
             //idea: write only if a certain extent of acceleration is present
 

@@ -9,48 +9,45 @@
     <TextView
         android:id="@+id/zCoor"
         android:layout_width="80dp"
-        android:layout_height="30dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="24dp"
         android:textSize="20sp"
-        android:layout_marginBottom="270dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/readStatus"
         app:layout_constraintStart_toStartOf="@+id/readStatus"
         app:layout_constraintTop_toBottomOf="@+id/yCoor" />
 
     <TextView
         android:id="@+id/yCoor"
-        android:layout_width="80dp"
-        android:layout_height="30dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="26dp"
         android:textSize="20sp"
-        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@+id/zCoor"
         app:layout_constraintEnd_toEndOf="@+id/zCoor"
-        app:layout_constraintStart_toStartOf="@+id/zCoor"
+        app:layout_constraintStart_toStartOf="@+id/xCoor"
         app:layout_constraintTop_toBottomOf="@+id/xCoor" />
 
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="217dp"
-        android:layout_marginBottom="89dp"
-        android:text="Send string"
-        app:layout_constraintBottom_toTopOf="@+id/readStatus"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginStart="28dp"
+        android:layout_marginBottom="13dp"
+        android:text="Send sensor data"
+        app:layout_constraintBottom_toTopOf="@+id/xCoor"
+        app:layout_constraintStart_toStartOf="@+id/editText" />
 
     <TextView
         android:id="@+id/readStatus"
         android:layout_width="0dp"
-        android:layout_height="101dp"
+        android:layout_height="0dp"
         android:layout_marginStart="68dp"
         android:layout_marginEnd="68dp"
-        android:layout_marginBottom="86dp"
+        android:layout_marginBottom="70dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        app:layout_constraintTop_toBottomOf="@+id/zCoor" />
 
     <EditText
         android:id="@+id/editText"
@@ -69,14 +66,38 @@
 
     <TextView
         android:id="@+id/xCoor"
-        android:layout_width="80dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="352dp"
-        android:textSize="20sp"
+        android:layout_width="84dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="68dp"
         android:layout_marginBottom="15dp"
+        android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/yCoor"
-        app:layout_constraintEnd_toEndOf="@+id/yCoor"
-        app:layout_constraintStart_toStartOf="@+id/yCoor"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="216dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:layout_marginBottom="264dp"
+        app:layout_constraintBottom_toTopOf="@+id/xCoor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RadioButton
+            android:id="@+id/noDelay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Fastest delay" />
+
+        <RadioButton
+            android:id="@+id/normalDelay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Normal delay" />
+    </RadioGroup>
 
 </android.support.constraint.ConstraintLayout>
