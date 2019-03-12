@@ -121,15 +121,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        // Get the device MAC address, which is the last 17 chars in the View
-        final String address = macAddress.getText().toString();
-        // Spawn a new thread to avoid blocking the GUI one
 
         button.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v){
                 final String address = macAddress.getText().toString();
+                System.out.println(address);
 
                 new Thread()
                 {

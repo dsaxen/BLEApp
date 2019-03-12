@@ -58,7 +58,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="139dp"
         android:layout_marginBottom="169dp"
-        android:digits="0123456789ABCDEF-"
+        android:digits="0123456789ABCDEF-:"
         android:ems="10"
         android:hint="MAC Address"
         android:inputType="textCapCharacters"
