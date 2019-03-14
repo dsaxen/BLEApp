@@ -57,7 +57,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor accelerometer;
 
     private Button button;
+    private Button button2;
     private TextView readStatus;
+    private TextView countView;
     private EditText macAddress;
 
     private RadioButton noDelay;
@@ -67,12 +69,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView yCoor; //Y axis object
     TextView zCoor; //Z axis object
 
+    int count = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         button = (Button) findViewById(R.id.button);
+        button2 = (Button) findViewById(R.id.button2);
         readStatus = (TextView) findViewById(R.id.readStatus);
         macAddress = (EditText) findViewById(R.id.editText);
         xCoor=(TextView)findViewById(R.id.xCoor);
@@ -81,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         noDelay = (RadioButton) findViewById(R.id.noDelay);
         normalDelay = (RadioButton) findViewById(R.id.normalDelay);
+
+        countView = (TextView) findViewById(R.id.textView2);
 
 
 
@@ -124,6 +131,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+        button2.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                if(sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).size()>0){
+                    sensorManager.unregisterListener(MainActivity.this);
+                }
+            }
+        });
+
 
         button.setOnClickListener(new View.OnClickListener(){
 
@@ -138,6 +155,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     sensorManager.unregisterListener(MainActivity.this);
                 }
 
+
+                //check which delay is chosen
                 if(noDelay.isChecked()){
                     sensorManager.registerListener(MainActivity.this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
                 }
@@ -146,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
 
                 final String address = macAddress.getText().toString();
+                count = 0;
 
 
                 new Thread()
@@ -213,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float x=event.values[0];
             float y=event.values[1];
             float z=event.values[2];
-            System.out.println(x);
+
 
             //x,y and z are vectors with the unit m/s^2
 
@@ -225,6 +245,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             //idea: write only if a certain extent of acceleration is present
 
             if (connThread != null){ //if Bluetooth connection is alive, we write to the remote party
+
+                count++;
+                countView.setText("Sent messages: " + count);
+
                 connThread.write(x + "," + y + "," + z);
             }
         }
