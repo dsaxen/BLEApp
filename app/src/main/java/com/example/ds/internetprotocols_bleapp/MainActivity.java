@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         button = (Button) findViewById(R.id.button);
         button2 = (Button) findViewById(R.id.button2);
-        readStatus = (TextView) findViewById(R.id.readStatus);
         macAddress = (EditText) findViewById(R.id.editText);
         xCoor=(TextView)findViewById(R.id.xCoor);
         yCoor=(TextView)findViewById(R.id.yCoor);
@@ -138,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if(sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).size()>0){
                     sensorManager.unregisterListener(MainActivity.this);
                 }
+                connThread = null;
             }
         });
 
@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                 Toast.makeText(getBaseContext(), "Socket creation failed", Toast.LENGTH_SHORT).show();
                             }
                         }
-                        if(fail == false) {
+                        if(!fail) {
                             connThread = new ConnectedThread(mBTSocket);
                             connThread.start();
 
@@ -211,9 +211,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                 }.start();
 
-                if(connThread != null){
-                    connThread.write("hi there");
-                }
             }
         });
 
@@ -248,7 +245,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 count++;
                 countView.setText("Sent messages: " + count);
-
                 connThread.write(x + "," + y + "," + z);
             }
         }
